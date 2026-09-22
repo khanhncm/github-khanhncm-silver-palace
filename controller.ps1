@@ -5,7 +5,7 @@ param(
 )
 
 Set-StrictMode -Version 3.0
-$ErrorActionPreference = 'Stop'
+$ErrorActionPreference = "Stop"
 $PSNativeCommandUseErrorActionPreference = $true
 
 $Zig = "$PSScriptRoot\zig\zig-x86_64-windows-0.17.0-dev.2251\zig.exe"
