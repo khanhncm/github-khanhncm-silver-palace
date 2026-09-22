@@ -49,6 +49,6 @@ try {
       exit 1
     }
   }
-  Write-Host "Done $($MyInvocation.Line)" -ForegroundColor Green
+  Write-Host "Done" -ForegroundColor Green
 }
 catch { throw }
