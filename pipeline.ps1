@@ -4,6 +4,10 @@ param(
     [string]$Target
 )
 
+Set-StrictMode -Version 3.0
+$ErrorActionPreference = 'Stop'
+$PSNativeCommandUseErrorActionPreference = $true
+
 $pipeline = @()
 switch ($Target.ToLower()) {
     "client" { $pipeline = @("build-client", "patch-client", "run-client") }
@@ -13,12 +17,12 @@ switch ($Target.ToLower()) {
     }
 }
 
+$total = $pipeline.Count
+$current = 0
 foreach ($stage in $pipeline) {
     Write-Host ">> controller.ps1 $stage" -ForegroundColor Cyan
-    & "$PSScriptRoot\controller.ps1" $stage
-
-    if (-not $? -or $LASTEXITCODE -ne 0) {
-        Write-Host "$stage failed, stopping." -ForegroundColor Magenta
-        exit 1
+    try {
+        & "$PSScriptRoot\controller.ps1" $stage
     }
+    catch { throw }
 }
