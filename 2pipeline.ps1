@@ -7,7 +7,7 @@ folder structure
 
 param(
 [Parameter(Position=0)]
-[ValidateSet("client")]
+[ValidateSet("client", "server")]
 [string]$Target
 )
 
@@ -19,6 +19,7 @@ try {
   $pipeline = @()
   switch ($Target.ToLower()) {
     "client" { $pipeline = @("build-client", "patch-client", "run-client") }
+    "server" { $pipeline = @("build-server", "run-server") }
     default {
       Write-Host "Unknown target: $Target" -ForegroundColor Magenta
       exit 1
@@ -26,13 +27,14 @@ try {
   }
   $total = $pipeline.Count
   $current = 0
-  $controller = "controller.ps1"
+  $controller = "1controller.ps1"
   foreach ($stage in $pipeline) {
     $current += 1
     Write-Host "$current/$total> $controller $stage" -ForegroundColor Cyan
     & "$PSScriptRoot\$controller" $stage
   }
-  Write-Host "Done $($MyInvocation.Line)" -ForegroundColor Green
 }
 catch { throw }
-
+finally {
+  Write-Host "Finish $($MyInvocation.Line)" -ForegroundColor Green
+}

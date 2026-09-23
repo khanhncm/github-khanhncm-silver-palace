@@ -9,7 +9,10 @@ folder structure
 
 param(
   [Parameter(Position=0)]
-  [ValidateSet("build-client", "patch-client", "run-client", "build-server")]
+  [ValidateSet(
+    "build-client", "patch-client", "run-client", 
+    "build-server", "run-server"
+  )]
   [string]$Action
 )
 
@@ -19,6 +22,7 @@ $PSNativeCommandUseErrorActionPreference = $true
 
 $Zig = "$PSScriptRoot\zig\zig-x86_64-windows-0.17.0-dev.2251\zig.exe"
 $PatchDir = "$PSScriptRoot\client\bloom\"
+$ServerDir = "$PSScriptRoot\server\roze\"
 $BinDir = "$PSScriptRoot\client\Silver_Palace-CBT2-0.10.82.1\SilverPalace\Binaries\Win64\"
 $Game = "red_rose.exe"
 
@@ -44,10 +48,19 @@ try {
     }     
     "run-client" { Start-Process -FilePath $Game -WorkingDirectory $BinDir }
     "build-server" {
-      Push-Location -Path .\server\zetsa
+      Push-Location -Path $ServerDir
       try {
-        Start-Process zig -ArgumentList "build run-cdnsv -Doptimize=ReleaseSmall" -NoNewWindow
-        zig build run-gamesv -Doptimize=ReleaseSmall
+        & $Zig build
+      }
+      catch { throw }
+      finally { Pop-Location }
+    }
+    "run-server" {
+      Push-Location -Path $ServerDir
+      try {
+        & $Zig build run-sdk-server
+        & $Zig build run-dir-server
+        & $Zig build run-scene-server
       }
       catch { throw }
       finally { Pop-Location }
@@ -58,6 +71,8 @@ try {
       exit 1
     }
   }
-  Write-Host "Done $($MyInvocation.Line)" -ForegroundColor Green
 }
 catch { throw }
+finally {
+  Write-Host "Finish $($MyInvocation.Line)" -ForegroundColor Green
+}
