@@ -24,13 +24,13 @@ try {
       exit 1
     }
   }
-  
   $total = $pipeline.Count
   $current = 0
+  $controller = "controller.ps1"
   foreach ($stage in $pipeline) {
     $current += 1
-    Write-Host "$current/$total> controller.ps1 $stage" -ForegroundColor Cyan
-    & "$PSScriptRoot\controller.ps1" $stage
+    Write-Host "$current/$total> $controller $stage" -ForegroundColor Cyan
+    & "$PSScriptRoot\$controller" $stage
   }
   Write-Host "Done $($MyInvocation.Line)" -ForegroundColor Green
 }
