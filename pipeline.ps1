@@ -1,3 +1,10 @@
+<#
+folder structure
+  YOU ARE HERE
+  THIS-SCRIPT.ps1
+  controller.ps1
+#>
+
 param(
 [Parameter(Position=0)]
 [ValidateSet("client")]

@@ -1,3 +1,12 @@
+<#
+folder structure
+  YOU ARE HERE
+  THIS-SCRIPT.ps1
+  client\
+  server\
+  zig\
+#>
+
 param(
   [Parameter(Position=0)]
   [ValidateSet("build-client", "patch-client", "run-client", "build-server")]
