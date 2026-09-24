@@ -11,8 +11,9 @@ param(
   [Parameter(Position=0)]
   [ValidateSet(
     "build-client", "patch-client", "run-client", 
-    "build-server", 
-    "run-dir-server", "run-sdk-server", "run-scene-server", "run-all-server"
+    "build-server",
+    "run-dir-server", "run-sdk-server", "run-scene-server",
+    "run-all-server"
   )]
   [string]$Action
 )
@@ -30,7 +31,9 @@ $Game = "red_rose.exe"
 
 #server
 $ServerDir = "server\roze\"
+$ServerList = "run-dir-server", "run-sdk-server", "run-scene-server"
 
+Push-Location -Path $PSScriptRoot
 try {
   switch -Regex ($Action) {
     "build-client" {
@@ -60,28 +63,23 @@ try {
       catch { throw }
       finally { Pop-Location }
     }
-    "^(run-dir-server|run-sdk-server|run-scene-server)" {
+    { $_ -in $ServerList } {
       Push-Location -Path $ServerDir
       try {
-        & $Zig build  $Action -- --concurrency 5
+        & $Zig build $Action -- --concurrency 5
+         Write-Host "No 1" 
       }
       catch { throw }
       finally { Pop-Location }
     }
     "run-all-server" {
       try {
-        $j1 = Start-Job { .\1controller.ps1 run-dir-server }
-        $j2 = Start-Job { .\1controller.ps1 run-sdk-server }
-        $j3 = Start-Job { .\1controller.ps1 run-scene-server }
-        
-        # Stream logs in real-time
-        Receive-Job -Job $j1,$j2,$j3 -Wait -AutoRemoveJob
+        $ServerList | ForEach-Object -Parallel {
+          & $using:PSCommandPath $_ 2>&1 | ForEach-Object { $_ } 
+        } -ThrottleLimit 5
       }
       catch { throw }
-      finally { 
-        Write-Host "Stopping..."
-        Get-Job | Stop-Job
-      }
+      finally {}
     }
     default {
       Write-Host  "No handler for action: '$Action'" -ForegroundColor Magenta
@@ -90,5 +88,6 @@ try {
   }
 }
 catch { throw }
+finally { Pop-Location }
 
 Write-Host "Finish $($MyInvocation.Line)" -ForegroundColor Green

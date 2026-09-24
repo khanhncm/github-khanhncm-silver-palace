@@ -17,6 +17,7 @@ $PSNativeCommandUseErrorActionPreference = $true
 
 $Controller = ".\1controller.ps1"
 
+Push-Location -Path $PSScriptRoot
 try {
   switch ($Target) {
     "client" { 
@@ -31,6 +32,7 @@ try {
     }
     "server" {
       & $Controller build-server
+      & $Controller run-all-server
     }
     default {
       Write-Host "Unknown target: $Target" -ForegroundColor Magenta
@@ -39,5 +41,6 @@ try {
   }
 }
 catch { throw }
+finally { Pop-Location }
 
 Write-Host "Finish $($MyInvocation.Line)" -ForegroundColor Green
