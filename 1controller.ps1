@@ -10,7 +10,7 @@ folder structure
 param(
   [Parameter(Position=0)]
   [ValidateSet(
-    "build-client", "patch-client", "run-client", 
+    "build-patch", "patch-client", "run-client", 
     "build-server",
     "run-dir-server", "run-sdk-server", "run-scene-server",
     "run-all-server"
@@ -25,7 +25,7 @@ $PSNativeCommandUseErrorActionPreference = $true
 $Zig = "$PSScriptRoot\zig\zig-x86_64-windows-0.17.0-dev.2251\zig.exe"
 
 # client
-$PatchDir = "client\bloom\"
+$PatchDir = "patch\bloom\"
 $BinDir = "$PSScriptRoot\client\Silver_Palace-CBT2-0.10.82.1\SilverPalace\Binaries\Win64\"
 $Game = "red_rose.exe"
 
@@ -36,7 +36,7 @@ $ServerList = "run-dir-server", "run-sdk-server", "run-scene-server"
 Push-Location -Path $PSScriptRoot
 try {
   switch -Regex ($Action) {
-    "build-client" {
+    "build-patch" {
       Push-Location -Path $PatchDir
       try {
         & $Zig build
@@ -45,14 +45,12 @@ try {
       finally { Pop-Location }
     }
     "patch-client" {
-      Push-Location -Path $PatchDir\zig-out\bin
       try {
         foreach ($file in @($Game, "bloom.dll")) {
-          Copy-Item -Path $file -Destination $BinDir -Force -Verbose
+          Copy-Item -Path $PatchDir\zig-out\bin\$file -Destination $BinDir -Force -Verbose
         }
       }
       catch { throw }
-      finally { Pop-Location }
     }     
     "run-client" { Start-Process -FilePath $Game -WorkingDirectory $BinDir }
     "build-server" {
@@ -73,13 +71,9 @@ try {
       finally { Pop-Location }
     }
     "run-all-server" {
-      try {
-        $ServerList | ForEach-Object -Parallel {
-          & $using:PSCommandPath $_ 2>&1 | ForEach-Object { $_ } 
-        } -ThrottleLimit 5
-      }
-      catch { throw }
-      finally {}
+      $ServerList | ForEach-Object -Parallel {
+        & $using:PSCommandPath $_ 2>&1 | ForEach-Object { $_ } 
+      } -ThrottleLimit $ServerList.Count
     }
     default {
       Write-Host  "No handler for action: '$Action'" -ForegroundColor Magenta

@@ -21,7 +21,7 @@ Push-Location -Path $PSScriptRoot
 try {
   switch ($Target) {
     "client" { 
-      $pipeline = @("build-client", "patch-client", "run-client") 
+      $pipeline = @("build-patch", "patch-client", "run-client") 
       $total = $pipeline.Count
       $current = 0
       foreach ($stage in $pipeline ) {
