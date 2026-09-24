@@ -32,8 +32,9 @@ try {
   $total = $pipeline.Count
   $current = 0
   foreach ($stage in $pipeline) {
-      Write-Host ">> $controller $stage" -ForegroundColor Cyan
-      & .\$controller $stage
+    $current++
+    Write-Host "[$current/$total] >> $controller $stage" -ForegroundColor Cyan
+    & .\$controller $stage
   }
 }
 catch { throw }
