@@ -6,35 +6,38 @@ folder structure
 #>
 
 param(
-[Parameter(Position=0)]
-[ValidateSet("client", "server")]
-[string]$Target
+  [Parameter(Position=0)]
+  [ValidateSet("client", "server")]
+  [string]$Target
 )
 
 Set-StrictMode -Version 3.0
 $ErrorActionPreference = "Stop"
 $PSNativeCommandUseErrorActionPreference = $true
 
+$Controller = ".\1controller.ps1"
+
 try {
-  $pipeline = @()
-  switch ($Target.ToLower()) {
-    "client" { $pipeline = @("build-client", "patch-client", "run-client") }
-    "server" { $pipeline = @("build-server", "run-server") }
+  switch ($Target) {
+    "client" { 
+      $pipeline = @("build-client", "patch-client", "run-client") 
+      $total = $pipeline.Count
+      $current = 0
+      foreach ($stage in $pipeline ) {
+        $current += 1
+        Write-Host "$current/$total> $Controller $stage" -ForegroundColor Cyan
+        & $Controller $stage
+      }
+    }
+    "server" {
+      & $Controller build-server
+    }
     default {
       Write-Host "Unknown target: $Target" -ForegroundColor Magenta
       exit 1
     }
   }
-  $total = $pipeline.Count
-  $current = 0
-  $controller = "1controller.ps1"
-  foreach ($stage in $pipeline) {
-    $current += 1
-    Write-Host "$current/$total> $controller $stage" -ForegroundColor Cyan
-    & "$PSScriptRoot\$controller" $stage
-  }
 }
 catch { throw }
-finally {
-  Write-Host "Finish $($MyInvocation.Line)" -ForegroundColor Green
-}
+
+Write-Host "Finish $($MyInvocation.Line)" -ForegroundColor Green

@@ -11,7 +11,8 @@ param(
   [Parameter(Position=0)]
   [ValidateSet(
     "build-client", "patch-client", "run-client", 
-    "build-server", "run-server"
+    "build-server", 
+    "run-dir-server", "run-sdk-server", "run-scene-server", "run-all-server"
   )]
   [string]$Action
 )
@@ -21,13 +22,17 @@ $ErrorActionPreference = "Stop"
 $PSNativeCommandUseErrorActionPreference = $true
 
 $Zig = "$PSScriptRoot\zig\zig-x86_64-windows-0.17.0-dev.2251\zig.exe"
-$PatchDir = "$PSScriptRoot\client\bloom\"
-$ServerDir = "$PSScriptRoot\server\roze\"
+
+# client
+$PatchDir = "client\bloom\"
 $BinDir = "$PSScriptRoot\client\Silver_Palace-CBT2-0.10.82.1\SilverPalace\Binaries\Win64\"
 $Game = "red_rose.exe"
 
+#server
+$ServerDir = "server\roze\"
+
 try {
-  switch ($Action) {
+  switch -Regex ($Action) {
     "build-client" {
       Push-Location -Path $PatchDir
       try {
@@ -55,24 +60,35 @@ try {
       catch { throw }
       finally { Pop-Location }
     }
-    "run-server" {
+    "^(run-dir-server|run-sdk-server|run-scene-server)" {
       Push-Location -Path $ServerDir
       try {
-        & $Zig build run-sdk-server
-        & $Zig build run-dir-server
-        & $Zig build run-scene-server
+        & $Zig build  $Action -- --concurrency 5
       }
       catch { throw }
       finally { Pop-Location }
     }
+    "run-all-server" {
+      try {
+        $j1 = Start-Job { .\1controller.ps1 run-dir-server }
+        $j2 = Start-Job { .\1controller.ps1 run-sdk-server }
+        $j3 = Start-Job { .\1controller.ps1 run-scene-server }
+        
+        # Stream logs in real-time
+        Receive-Job -Job $j1,$j2,$j3 -Wait -AutoRemoveJob
+      }
+      catch { throw }
+      finally { 
+        Write-Host "Stopping..."
+        Get-Job | Stop-Job
+      }
+    }
     default {
-      & $Zig version
-      Write-Host  "Unknown action: '$Action'" -ForegroundColor Magenta
+      Write-Host  "No handler for action: '$Action'" -ForegroundColor Magenta
       exit 1
     }
   }
 }
 catch { throw }
-finally {
-  Write-Host "Finish $($MyInvocation.Line)" -ForegroundColor Green
-}
+
+Write-Host "Finish $($MyInvocation.Line)" -ForegroundColor Green
