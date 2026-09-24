@@ -15,29 +15,25 @@ Set-StrictMode -Version 3.0
 $ErrorActionPreference = "Stop"
 $PSNativeCommandUseErrorActionPreference = $true
 
-$Controller = ".\1controller.ps1"
+$PipelineMap = @{
+    client = "build-patch", "patch-client", "run-client"
+    server = "build-server", "run-all-server"
+}
+
+$pipeline = $PipelineMap.$Target
+if (-not $pipeline) {
+    Write-Host "Unknown target: $Target" -ForegroundColor Magenta
+    exit 1
+}
 
 Push-Location -Path $PSScriptRoot
 try {
-  switch ($Target) {
-    "client" { 
-      $pipeline = @("build-patch", "patch-client", "run-client") 
-      $total = $pipeline.Count
-      $current = 0
-      foreach ($stage in $pipeline ) {
-        $current += 1
-        Write-Host "$current/$total> $Controller $stage" -ForegroundColor Cyan
-        & $Controller $stage
-      }
-    }
-    "server" {
-      & $Controller build-server
-      & $Controller run-all-server
-    }
-    default {
-      Write-Host "Unknown target: $Target" -ForegroundColor Magenta
-      exit 1
-    }
+  $controller = "1controller.ps1"
+  $total = $pipeline.Count
+  $current = 0
+  foreach ($stage in $pipeline) {
+      Write-Host ">> $controller $stage" -ForegroundColor Cyan
+      & .\$controller $stage
   }
 }
 catch { throw }

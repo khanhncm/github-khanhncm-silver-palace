@@ -24,9 +24,10 @@ $PSNativeCommandUseErrorActionPreference = $true
 
 $Zig = "$PSScriptRoot\zig\zig-x86_64-windows-0.17.0-dev.2251\zig.exe"
 
-# client
+# patch
 $PatchDir = "patch\bloom\"
-$BinDir = "$PSScriptRoot\client\Silver_Palace-CBT2-0.10.82.1\SilverPalace\Binaries\Win64\"
+# client
+$BinDir = "client\Silver_Palace-CBT2-0.10.82.1\SilverPalace\Binaries\Win64\"
 $Game = "red_rose.exe"
 
 #server
@@ -65,7 +66,6 @@ try {
       Push-Location -Path $ServerDir
       try {
         & $Zig build $Action -- --concurrency 5
-         Write-Host "No 1" 
       }
       catch { throw }
       finally { Pop-Location }
@@ -76,7 +76,7 @@ try {
       } -ThrottleLimit $ServerList.Count
     }
     default {
-      Write-Host  "No handler for action: '$Action'" -ForegroundColor Magenta
+      Write-Host "No handler for action: '$Action'" -ForegroundColor Magenta
       exit 1
     }
   }
