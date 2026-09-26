@@ -10,3 +10,6 @@ notepad $PROFILE
 Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
 
 Get-NetTCPConnection -LocalPort 300001 | Format-List LocalAddress, LocalPort, State, OwningProcess
+
+F:\ghidra\ghidra_12.1.3_PUBLIC\support\launch.properties
+VMARGS_WINDOWS=-Dsun.java2d.uiScale=2
